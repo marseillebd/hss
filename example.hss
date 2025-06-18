@@ -1,0 +1,11 @@
+#!/usr/bin/env hss
+
+import System.Environment
+
+main :: IO ()
+main = do
+  putStrLn "hello from hss"
+  progName <- getProgName
+  putStrLn $ "progName: " ++ progName
+  putStr "args: "
+  print =<< getArgs
