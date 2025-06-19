@@ -1,85 +1,68 @@
 module Main where
 
-import Control.Exception (try, bracket, ioError)
-import Data.Word (Word32)
-import System.Environment (getProgName, getArgs)
-import System.FilePath ((</>), (<.>))
-import System.IO.Error (isAlreadyExistsError)
-import System.Random (randomIO)
-import Shh (exe, (|>), (&>), capture)
-import Data.Text.Lazy.Encoding (decodeUtf8)
-import Data.String (fromString)
-import Data.List (isPrefixOf)
-import Data.String.Here.Uninterpolated (here)
+import Hss
 
-import qualified Shh
-import qualified System.FilePath as Path
-import qualified System.Directory as Dir
-import qualified Data.Text.Lazy as LT
-import qualified Data.ByteString.Lazy as LBS
+import Data.List (isPrefixOf)
+
+import qualified Data.ByteString.Lazy.Char8 as LBS
 
 main :: IO ()
 main = getArgs >>= \case
-  scriptPath : otherArgs -> withTmpDir $ \tmpdir -> do
-    let scriptDir = Path.takeDirectory scriptPath
-        scriptName = Path.takeBaseName scriptPath -- FIXME encode names outside of usual identifiers
+  scriptPath : otherArgs -> withTempDir $ \tmpdir -> do
+    let scriptDir = dirname scriptPath
+        scriptName = basename scriptPath -- FIXME encode names outside of usual identifiers
     readFile scriptPath >>= \case
       content | "#!" `isPrefixOf` content -> do
         writeFile (tmpdir </> "Main.hs") "\n"
-        exe "tail" "-n+2" scriptPath &> (Shh.Append . fromString $ tmpdir </> "Main.hs")
+        exe "tail" "-n+2" scriptPath &>> (tmpdir </> "Main.hs")
               | otherwise ->
         exe "cp" scriptPath (tmpdir </> "Main.hs")
     let freshCabal = tmpdir </> scriptName <.> "cabal"
     writeFile freshCabal templateCabal
+    writeFile (tmpdir </> "cabal.project") cabalProject
     exe "sed" "-i" ("s/SCRIPTNAME/"<>scriptName<>"/") freshCabal
-    absExePath <- Dir.withCurrentDirectory tmpdir $ do
+    absExePath <- withCd tmpdir $ do
       exe "cabal" "build"
-      relExePath <- exe "find" "-executable" "-type" "f" "-name" scriptName |> capture
-      pure $ tmpdir </> (LT.unpack . LT.takeWhile (/='\n') . decodeUtf8 $ relExePath)
+      relExePaths <- exe "find" "-executable" "-type" "f" "-name" scriptName |> capture
+      let relExePath = head $ LBS.lines relExePaths
+      pure $ tmpdir </> convertStringLike relExePath
     let scriptExePath = scriptDir </> "."<>scriptName
     exe "mv" absExePath scriptExePath
     exe scriptExePath otherArgs -- TODO apply other args
   _ -> pure () -- TODO exitFailure
 
-withTmpDir :: (FilePath -> IO a) -> IO a
-withTmpDir = bracket mkDir rmDir
-  where
-  mkDir :: IO FilePath
-  mkDir = Dir.getTemporaryDirectory >>= loop
-  loop :: FilePath -> IO FilePath
-  loop parentDir = do
-    nonce <- randomIO :: IO Word32
-    let dirName = parentDir </> "hss" <.> show nonce
-    try (Dir.createDirectory dirName) >>= \case
-      Left exn | isAlreadyExistsError exn -> loop parentDir
-               | otherwise -> ioError exn
-      Right () -> pure dirName
-  rmDir = Dir.removePathForcibly
+cabalProject :: String
+cabalProject = [here|
+packages: .
+
+source-repository-package
+  type: git
+  -- FIXME use a hss release off github
+  location: /home/marseillebd/Documents/programming/hss
+  -- branch: main
+|]
 
 templateCabal :: String
 templateCabal = [here|
-cabal-version:      3.0
-name:               SCRIPTNAME
-version:            0.1.0.0
-build-type:         Simple
+cabal-version:  3.0
+name:           SCRIPTNAME
+version:        0.0.0.0
+build-type:     Simple
 
 executable SCRIPTNAME
-    main-is:          Main.hs
-    build-depends:
-        base,
-        directory,
-        filepath,
-        -- hss,
-        random,
-        shh,
+  main-is:          Main.hs
+  build-depends:
+    -- TODO use a different base library
+    base,
+    hss,
 
-    default-language: Haskell2010
-    default-extensions:
-      ExtendedDefaultRules,
-      LambdaCase,
-      OverloadedStrings,
-      TemplateHaskell,
-      QuasiQuotes,
+  default-language: Haskell2010
+  default-extensions:
+    ExtendedDefaultRules,
+    LambdaCase,
+    OverloadedStrings,
+    TemplateHaskell,
+    QuasiQuotes,
 
-    ghc-options: -Wall
+  ghc-options: -Wall -Wno-type-defaults
 |]
