@@ -10,6 +10,8 @@ module Hss
   -- * Environment
   , getProgName
   , getArgs
+  , getEnv
+  , getEnvironment
   , stdin
   , stdout
   , stderr
@@ -79,25 +81,26 @@ import qualified Prelude
 import Hss.Path
 -- import Hss.String
 
-import Data.Text.Encoding (encodeUtf8)
 import Control.Exception (throw)
 import Data.ByteString (ByteString)
 import Data.Function ((&))
 import Data.String.Here.Uninterpolated (here)
 import Data.String (IsString(..))
+import Data.Text.Encoding (encodeUtf8)
+import Data.Text (Text)
 import Shh (exe, (|>), Shell)
-import System.Environment (getProgName, getArgs)
 import System.IO (IOMode(..), withFile, openFile, stdin, stdout, stderr)
 import System.IO (utf8)
 import System.OsPath (encodeWith, decodeWith)
 import System.OsPath.Encoding(utf16le_b)
-import Data.Text (Text)
+import System.Process.Environment.OsString (getArgs, getEnv, getEnvironment)
 
-import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString as BS
-import qualified Shh
+import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
+import qualified Shh
+import qualified System.Environment
 
 type String = [Char]
 {-# DEPRECATED String "use Text or any of the other un-slow string types" #-}
@@ -145,3 +148,6 @@ captureLines = fmap LBS.toStrict <$> Shh.captureLines
 undefined :: a
 undefined = Prelude.undefined
 {-# WARNING undefined "undefined is for temp use only; implement missing functionality, report errors, or panic" #-}
+
+getProgName :: IO OsString
+getProgName = hsStrToPath <$> System.Environment.getProgName

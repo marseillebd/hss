@@ -54,6 +54,7 @@ library
       random,
       base >=4.17,
       bytestring ^>=0.12,
+      process ^>=1.6.26.0,
       directory,
       filepath ^>=1.5.2.0,
       here,

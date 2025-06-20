@@ -8,9 +8,8 @@ import qualified Hss.LinkedList as LL
 
 main :: IO ()
 main = getArgs >>= \case
-  scriptArg : otherArgs -> withTempDir $ \tmpdir -> do
-    let scriptPath = hsStrToPath scriptArg
-        scriptDir = dirname scriptPath
+  scriptPath : otherArgs -> withTempDir $ \tmpdir -> do
+    let scriptDir = dirname scriptPath
         scriptName = basename scriptPath -- FIXME encode names outside of usual identifiers
     readFile scriptPath >>= \case
       content | "#!" `B.isPrefixOf` content -> do
@@ -38,7 +37,6 @@ packages: .
 
 source-repository-package
   type: git
-  -- FIXME use a hss release off github
   location: https://github.com/marseillebd/hss
   branch: main
 |]
