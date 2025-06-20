@@ -1,13 +1,11 @@
 #!/usr/bin/env hss
 
 import System.Environment
-import MyLib (someFunc)
 
-import Hss.String
+import Hss
 
 main :: IO ()
 main = do
-  print someFunc
   putStrLn "hello from hss"
   progName <- getProgName
   putStrLn $ "progName: " ++ progName

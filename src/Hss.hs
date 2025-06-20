@@ -1,7 +1,7 @@
 module Hss
-  ( BS.ByteString
+  (
   -- * Shell
-  , exe
+    exe
   , (|>)
   , (&>)
   , (&>>)
@@ -10,84 +10,78 @@ module Hss
   , getArgs
   , withCd
   , withTempDir
-  -- * Strings
-  , fromString
+  -- * Basic Data Types
+  -- ** Booleans
+  , Bool(..)
+  -- ** Strings
   , here
-  , StringLike(..)
-  , convertStringLike
-  , MoreStringLike(..)
-  , lines
-  -- * Paths
-  , (</>)
-  , (<.>)
-  , dirname
-  , basename
+  -- ** Paths
+  , module Hss.Path
+  , toOsPath
+  , fromOsPath
+  , readFile
+  , writeFile
+  -- * Structural Data Types
+  -- * Composition
+  -- * Effects
+  -- * Prelude
   ) where
 
-import Prelude hiding (break, lines)
-import qualified Prelude
+import Prelude hiding (readFile, writeFile)
+
+-- import System.IO (withFile, IOMode(..), openFile)
+
+-- import Hss.Applicative
+-- import Hss.Base
+-- import Hss.Bool
+-- import Hss.Data
+-- import Hss.Function
+-- import Hss.Functor
+-- import Hss.IO
+-- import Hss.Monad
+import Hss.Path
+-- import Hss.String
 
 import Shh (exe, (|>), capture)
-import Data.String (fromString)
 import Data.String.Here.Uninterpolated (here)
 import System.Environment (getArgs)
-import System.FilePath ((</>), (<.>))
-import Data.Word (Word32)
-import System.Random (randomIO)
-import Control.Exception (try, bracket)
-import System.IO.Error (isAlreadyExistsError)
-import Data.String.Like (StringLike(..), convertStringLike)
+import Data.ByteString (ByteString)
+import Data.String (fromString)
+import System.IO (IOMode(..), withFile, openFile)
+import Control.Exception (throw)
+import System.OsPath.Encoding(utf16le_b)
+import System.IO (utf8)
+import System.OsPath (OsPath, encodeWith, decodeWith)
 
 import qualified Data.ByteString as BS
-import qualified System.Directory as Dir
-import qualified System.FilePath as Path
 import qualified Shh
-import qualified Data.ByteString.Lazy.Char8 as LBS
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 
 infixl 9 &>
-(&>) :: Shh.Shell m => Shh.Proc a -> FilePath -> m a
-p &> fpath = p Shh.&> Shh.Truncate (fromString fpath)
+(&>) :: Shh.Shell m => Shh.Proc a -> OsPath -> m a
+p &> fpath = p Shh.&> Shh.Truncate (fromString . unsafeDecodeUtf $ fpath)
 
 infixl 9 &>>
-(&>>) :: Shh.Shell m => Shh.Proc a -> FilePath -> m a
-p &>> fpath = p Shh.&> Shh.Append (fromString fpath)
+(&>>) :: Shh.Shell m => Shh.Proc a -> OsPath -> m a
+p &>> fpath = p Shh.&> Shh.Append (fromString . unsafeDecodeUtf $ fpath)
 
-withCd :: FilePath -> IO a -> IO a
-withCd = Dir.withCurrentDirectory
+-- TODO move to an IO module
+readFile :: OsPath -> IO ByteString
+readFile path = openFile (unsafeDecodeUtf path) ReadMode >>= BS.hGetContents
+writeFile :: OsPath -> ByteString -> IO ()
+writeFile path content = withFile (unsafeDecodeUtf path) WriteMode $ \fp ->
+  BS.hPutStr fp content
 
-withTempDir :: (FilePath -> IO a) -> IO a
-withTempDir = bracket mkDir rmDir
-  where
-  mkDir :: IO FilePath
-  mkDir = Dir.getTemporaryDirectory >>= loop
-  loop :: FilePath -> IO FilePath
-  loop parentDir = do
-    nonce <- randomIO :: IO Word32
-    let dirName = parentDir </> "hss" <.> show nonce
-    try (Dir.createDirectory dirName) >>= \case
-      Left exn | isAlreadyExistsError exn -> loop parentDir
-               | otherwise -> ioError exn
-      Right () -> pure dirName
-  rmDir = const $ pure () -- DEBUG
-  -- rmDir = Dir.removePathForcibly
+toOsPath :: ByteString -> OsPath
+toOsPath str = case encodeWith utf8 utf16le_b (T.unpack . T.decodeUtf8 $ str) of
+  Right ok -> ok
+  Left exn -> throw exn
 
-dirname :: FilePath -> FilePath
-dirname = Path.takeDirectory
+fromOsPath :: OsPath -> ByteString
+fromOsPath str = case decodeWith utf8 utf16le_b str of
+  Right ok -> T.encodeUtf8 . T.pack $ ok
+  Left exn -> throw exn
 
-basename :: FilePath -> String
-basename = Path.takeBaseName
-
-class StringLike a => MoreStringLike a where
-  -- TODO span
-  break :: (Char -> Bool) -> a -> (a, a)
-
-instance MoreStringLike String where
-  break = Prelude.break
-instance MoreStringLike LBS.ByteString where
-  break = LBS.break
-
-lines :: MoreStringLike str => str -> [str]
-lines str | strNull str = []
-lines str =
-  let (before, rest) = break (== '\n') str
-   in before : maybe [] (lines . snd) (uncons rest)
+instance Shh.ExecArg OsString where
+  asArg s = [fromString $ unsafeDecodeUtf s]

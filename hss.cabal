@@ -20,36 +20,54 @@ common warnings
 common extensions
   default-extensions:
     ExtendedDefaultRules,
+    FlexibleInstances,
     LambdaCase,
+    NoImplicitPrelude,
     OverloadedStrings,
     QuasiQuotes,
     TemplateHaskell,
+    TypeApplications,
     TypeSynonymInstances,
-    FlexibleInstances,
+  other-extensions:
+    DefaultSignatures,
 
 library
     import:           warnings, extensions,
     exposed-modules:
       Hss,
-      Hss.String,
+      -- Hss.Applicative,
+      -- Hss.Base,
+      -- Hss.Bool,
+      -- Hss.Data,
+      -- Hss.Function,
+      -- Hss.Functor,
+      -- Hss.IO,
+      -- Hss.Monad,
+      Hss.Path,
+      -- Hss.ByteString,
+      -- Hss.String,
     reexported-modules:
       Data.ByteString,
+      Data.ByteString.Char8,
       Data.ByteString.Lazy,
       Data.ByteString.Lazy.Char8,
       Data.Text,
+      Data.Text.Encoding,
+      Data.Text.IO,
       Data.Text.Lazy,
       Data.Text.Lazy.Encoding,
-    -- other-modules:
-    -- other-extensions:
+    other-modules:
+      Hss.String.Internal,
     build-depends:
       random,
       base >=4.17,
       bytestring ^>=0.12,
       directory,
-      filepath,
+      filepath ^>=1.5.2.0,
       here,
       shh ^>=0.7.1.4,
       text,
+      text-short,
       string-like ^>=0.1.0.1
     hs-source-dirs:   src
     default-language: Haskell2010
