@@ -39,8 +39,8 @@ packages: .
 source-repository-package
   type: git
   -- FIXME use a hss release off github
-  location: /home/marseillebd/Documents/programming/hss
-  -- branch: main
+  location: https://github.com/marseillebd/hss
+  branch: main
 |]
 
 templateCabal :: Text
