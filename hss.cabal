@@ -44,18 +44,10 @@ library
       -- Hss.IO,
       -- Hss.Monad,
       Hss.Path,
-      -- Hss.ByteString,
+      Hss.Bytes,
+      Hss.LinkedList,
+      Hss.LLString,
       -- Hss.String,
-    reexported-modules:
-      Data.ByteString,
-      Data.ByteString.Char8,
-      Data.ByteString.Lazy,
-      Data.ByteString.Lazy.Char8,
-      Data.Text,
-      Data.Text.Encoding,
-      Data.Text.IO,
-      Data.Text.Lazy,
-      Data.Text.Lazy.Encoding,
     other-modules:
       Hss.String.Internal,
     build-depends:

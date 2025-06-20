@@ -1,39 +1,31 @@
 module Main where
 
-import Prelude hiding (lines, writeFile, readFile)
-import Data.ByteString (ByteString)
-import Data.Text (Text)
-import Data.Text.Encoding (encodeUtf8)
-
 import Hss
 
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
-import qualified Data.ByteString as BS
-import qualified Data.ByteString.Lazy as LBS
-import qualified Data.ByteString.Char8 as BS8
+import qualified Hss.Bytes as B
+import qualified Hss.LinkedList as LL
 
 
 main :: IO ()
 main = getArgs >>= \case
   scriptArg : otherArgs -> withTempDir $ \tmpdir -> do
-    let scriptPath = toOsPath (encodeUtf8 $ T.pack scriptArg)
+    let scriptPath = hsStrToPath scriptArg
         scriptDir = dirname scriptPath
         scriptName = basename scriptPath -- FIXME encode names outside of usual identifiers
     readFile scriptPath >>= \case
-      content | "#!" `BS.isPrefixOf` content -> do
+      content | "#!" `B.isPrefixOf` content -> do
         writeFile (tmpdir </> "Main.hs") "\n"
         exe "tail" "-n+2" scriptPath &>> (tmpdir </> "Main.hs")
               | otherwise ->
         exe "cp" scriptPath (tmpdir </> "Main.hs")
     let freshCabal = tmpdir </> scriptName <.> "cabal"
-    writeFile freshCabal (encodeUtf8 templateCabal)
-    writeFile (tmpdir </> "cabal.project") (encodeUtf8 cabalProject)
+    writeFile freshCabal (textToBytes templateCabal)
+    writeFile (tmpdir </> "cabal.project") (textToBytes cabalProject)
     exe "sed" "-i" ("s/SCRIPTNAME/"<>scriptName<>"/") freshCabal
     absExePath <- withCd tmpdir $ do
       exe "cabal" "build"
-      relExePaths <- exe "find" "-executable" "-type" "f" "-name" scriptName |> capture
-      let relExePath = toOsPath . head $ BS8.lines $ LBS.toStrict relExePaths
+      relExePaths <- exe "find" "-executable" "-type" "f" "-name" scriptName |> captureLines
+      let relExePath = bytesToPath . maybe undefined id . LL.head $ relExePaths
       pure $ tmpdir </> relExePath
     let scriptExePath = scriptDir </> "."<>scriptName
     exe "mv" absExePath scriptExePath
@@ -59,10 +51,10 @@ version:        0.0.0.0
 build-type:     Simple
 
 executable SCRIPTNAME
-  main-is:          Main.hs
-  build-depends:
-    -- TODO use a different base library
-    base,
+  main-is:        Main.hs
+  build-depends:  hss
+  mixins:
+    hss (Hss as Prelude),
     hss,
 
   default-language: Haskell2010
