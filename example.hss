@@ -6,6 +6,6 @@ main :: IO ()
 main = do
   putStrLn "hello from hss"
   progName <- getProgName
-  putStrLn $ "progName: " <> progName
+  putStrLn $ "progName: " <> pathToHsStr progName
   putStr "args: "
   print =<< getArgs

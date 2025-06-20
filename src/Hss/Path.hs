@@ -1,28 +1,28 @@
 module Hss.Path
   ( OsPath, OsString
   , OsChar
-  , osp
-  , pack, unpack
   , (</>), (<.>), (-<.>)
   , dirname, basename
   , withCd
   , withTempDir
-  , unsafeEncodeUtf, unsafeDecodeUtf
   ) where
 
+import Hss.String.Types (OsString, OsPath)
+
+import Control.Exception (try, bracket)
+import Data.Word (Word32)
 import Prelude (Bool(..))
 import Prelude (Either(..), IO, Applicative(..), Monad(..), show, (.)) -- DELME
-import Data.String (IsString(..))
 import System.IO.Error (ioError, isAlreadyExistsError)
-import Control.Exception (try, bracket, throw)
 import System.Random (randomIO)
-import System.IO (utf8, FilePath)
-import System.OsPath.Encoding(utf16le_b)
 
-import System.OsPath
-import System.Directory.OsPath
+import System.Directory.OsPath (withCurrentDirectory, removePathForcibly, createDirectory, getTemporaryDirectory)
+import System.OsPath (OsChar, (<.>), (</>), (-<.>), unsafeEncodeUtf, takeDirectory, takeBaseName)
 
-import Data.Word (Word32)
+
+-- TODO IntoOsStr over </> when ghc 9.12
+-- (</>) :: (IntoOsStr a, IntoOsStr b) => a -> b -> OsPath
+-- a </> b = toPath a Sys.</> toPath b
 
 dirname :: OsPath -> OsPath
 dirname = takeDirectory
@@ -52,11 +52,3 @@ withTempDir = bracket mkDir rmDir
 
 withCd :: OsPath -> IO a -> IO a
 withCd = withCurrentDirectory
-
-instance IsString OsPath where
-  fromString = unsafeEncodeUtf
-
-unsafeDecodeUtf :: OsPath -> FilePath
-unsafeDecodeUtf ospath = case decodeWith utf8 utf16le_b ospath of
-  Right ok -> ok
-  Left exn -> throw exn

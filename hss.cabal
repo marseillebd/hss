@@ -23,6 +23,7 @@ common extensions
     FlexibleInstances,
     LambdaCase,
     NoImplicitPrelude,
+    -- NamedDefaults,
     OverloadedStrings,
     QuasiQuotes,
     TemplateHaskell,
@@ -44,6 +45,8 @@ library
       -- Hss.IO,
       -- Hss.Monad,
       Hss.Path,
+      Hss.String.Convert,
+      Hss.String.Types,
       Hss.Bytes,
       Hss.LinkedList,
       Hss.LLString,
@@ -51,17 +54,17 @@ library
     other-modules:
       Hss.String.Internal,
     build-depends:
-      random,
       base >=4.17,
       bytestring ^>=0.12,
-      process ^>=1.6.26.0,
       directory,
       filepath ^>=1.5.2.0,
       here,
+      process ^>=1.6.26.0,
+      random,
       shh ^>=0.7.1.4,
+      string-like ^>=0.1.0.1,
       text,
       text-short,
-      string-like ^>=0.1.0.1
     hs-source-dirs:   src
     default-language: Haskell2010
 

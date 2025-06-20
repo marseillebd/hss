@@ -28,10 +28,11 @@ module Hss
   , here
   , ByteString, Text
   -- ** String Conversions
+  , module Hss.String.Convert
   , hsStrToPath
-  , bytesToPath
   , pathToBytes
   , textToBytes
+  , pathToHsStr
   -- ** Paths
   , module Hss.Path
   , readFile
@@ -79,7 +80,7 @@ import qualified Prelude
 -- import Hss.IO
 -- import Hss.Monad
 import Hss.Path
--- import Hss.String
+import Hss.String.Convert
 
 import Control.Exception (throw)
 import Data.ByteString (ByteString)
@@ -91,7 +92,7 @@ import Data.Text (Text)
 import Shh (exe, (|>), Shell)
 import System.IO (IOMode(..), withFile, openFile, stdin, stdout, stderr)
 import System.IO (utf8)
-import System.OsPath (encodeWith, decodeWith)
+import System.OsPath (decodeWith)
 import System.OsPath.Encoding(utf16le_b)
 import System.Process.Environment.OsString (getArgs, getEnv, getEnvironment)
 
@@ -116,14 +117,9 @@ p &>> fpath = p Shh.&> Shh.Append (fromString . unsafeDecodeUtf $ fpath)
 -- TODO move to an IO module
 readFile :: OsPath -> IO ByteString
 readFile path = openFile (unsafeDecodeUtf path) ReadMode >>= BS.hGetContents
-writeFile :: OsPath -> ByteString -> IO ()
-writeFile path content = withFile (unsafeDecodeUtf path) WriteMode $ \fp ->
+writeFile :: IntoOsStr path => path -> ByteString -> IO ()
+writeFile path content = withFile (unsafeDecodeUtf $ toOsStr path) WriteMode $ \fp ->
   BS.hPutStr fp content
-
-bytesToPath :: ByteString -> OsPath
-bytesToPath str = case encodeWith utf8 utf16le_b (T.unpack . T.decodeUtf8 $ str) of
-  Right ok -> ok
-  Left exn -> throw exn
 
 pathToBytes :: OsPath -> ByteString
 pathToBytes str = case decodeWith utf8 utf16le_b str of
@@ -138,6 +134,9 @@ hsStrToPath = fromString
 
 textToBytes :: Text -> ByteString
 textToBytes = encodeUtf8
+
+pathToHsStr :: OsString -> String
+pathToHsStr = unsafeDecodeUtf
 
 capture :: (Functor io, Shell io) => io ByteString
 capture = LBS.toStrict <$> Shh.capture
