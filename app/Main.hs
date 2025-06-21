@@ -24,7 +24,7 @@ main = getArgs >>= \case
     absExePath <- withCd tmpdir $ do
       exe "cabal" "build"
       relExePaths <- exe "find" "-executable" "-type" "f" "-name" scriptName |> captureLines
-      let relExePath = toPath . maybe undefined id . LL.head $ relExePaths
+      let relExePath = maybe undefined id . LL.head $ relExePaths
       pure $ tmpdir </> relExePath
     let scriptExePath = scriptDir </> "."<>scriptName
     exe "mv" absExePath scriptExePath

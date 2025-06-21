@@ -1,6 +1,7 @@
 module Hss.String.Convert
   ( IntoOsStr(..)
   , unsafeDecodeUtf
+  , default IntoOsStr
   ) where
 
 import Control.Exception (throw)

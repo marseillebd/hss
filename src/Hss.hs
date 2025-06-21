@@ -29,6 +29,7 @@ module Hss
   , ByteString, Text
   -- ** String Conversions
   , module Hss.String.Convert
+  , default IntoOsStr
   , hsStrToPath
   , pathToBytes
   , textToBytes

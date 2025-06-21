@@ -8,6 +8,8 @@ module Hss.Path
   ) where
 
 import Hss.String.Types (OsString, OsPath)
+import Hss.String.Convert
+import Hss.String.Types
 
 import Control.Exception (try, bracket)
 import Data.Word (Word32)
@@ -17,12 +19,14 @@ import System.IO.Error (ioError, isAlreadyExistsError)
 import System.Random (randomIO)
 
 import System.Directory.OsPath (withCurrentDirectory, removePathForcibly, createDirectory, getTemporaryDirectory)
-import System.OsPath (OsChar, (<.>), (</>), (-<.>), unsafeEncodeUtf, takeDirectory, takeBaseName)
+import System.OsPath (OsChar, (<.>), (-<.>), unsafeEncodeUtf, takeDirectory, takeBaseName)
+import Hss.String.Convert
 
+import qualified System.OsPath as Sys
+default IntoOsStr (OsString)
 
--- TODO IntoOsStr over </> when ghc 9.12
--- (</>) :: (IntoOsStr a, IntoOsStr b) => a -> b -> OsPath
--- a </> b = toPath a Sys.</> toPath b
+(</>) :: (IntoOsStr a, IntoOsStr b) => a -> b -> OsPath
+a </> b = toPath a Sys.</> toPath b
 
 dirname :: OsPath -> OsPath
 dirname = takeDirectory
