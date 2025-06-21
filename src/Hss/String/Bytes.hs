@@ -1,4 +1,4 @@
-module Hss.ByteString
+module Hss.String.Bytes
   ( ByteString
   , BS.empty
   , BS.singleton
@@ -11,13 +11,9 @@ module Hss.ByteString
   , BS.isPrefixOf
   , BS.hGetContents
   , BS.hPut
+  , BS8.lines
   ) where
-
-import Prelude --DELME
-import Data.Word -- DELME
 
 import Data.ByteString
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.IO as BS
-
-
+import qualified Data.ByteString.Char8 as BS8

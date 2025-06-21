@@ -34,6 +34,13 @@ This project is very experimental right now.
 I wouldn't recommend anyone contribute besides myself.
 
 - [ ] explore how to organize Hss library
+  - [x] take exports from Prelude
+  - [ ] take exports from Data.{Functor,Applicative}, Control.Monad
+  - [ ] take exports from Data.{ByteString,Text}(,.IO}
+  - [ ] normalize/typeclass string functions
+  - [ ] take exports from Data.{Maybe,Either,These}
+  - [ ] packages: witherable, default
+  - [ ] an alternative to Show/Read; a pretty-printer
 - [ ] explore process creation, piping, capture, and redirection APIs (starting with Shh)
 - [x] pin the hss library used by an hss interpreter
 

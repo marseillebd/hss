@@ -1,45 +1,45 @@
 module Hss.Path
-  ( OsPath, OsString
-  , OsChar
+  ( Path
   , (</>), (<.>), (-<.>)
   , dirname, basename
   , withCd
   , withTempDir
   ) where
 
-import Hss.String.Types (OsString, OsPath)
+import Hss.Preprelude
+import Hss.String.Types (OsStr, Path)
+import Hss.String.Convert ()
 
 import Control.Exception (try, bracket)
 import Data.Word (Word32)
-import Prelude (Bool(..))
-import Prelude (Either(..), IO, Applicative(..), Monad(..), show, (.)) -- DELME
+import Prelude (show) -- DELME
 import System.IO.Error (ioError, isAlreadyExistsError)
 import System.Random (randomIO)
 
 import System.Directory.OsPath (withCurrentDirectory, removePathForcibly, createDirectory, getTemporaryDirectory)
-import System.OsPath (OsChar, (<.>), (</>), (-<.>), unsafeEncodeUtf, takeDirectory, takeBaseName)
+import System.OsPath ((<.>), (</>), (-<.>), unsafeEncodeUtf, takeDirectory, takeBaseName)
 
 
 -- TODO IntoOsStr over </> when ghc 9.12
--- (</>) :: (IntoOsStr a, IntoOsStr b) => a -> b -> OsPath
+-- (</>) :: (IntoOsStr a, IntoOsStr b) => a -> b -> Path
 -- a </> b = toPath a Sys.</> toPath b
 
-dirname :: OsPath -> OsPath
+dirname :: Path -> Path
 dirname = takeDirectory
 
-basename :: OsPath -> OsString
+basename :: Path -> OsStr
 basename = takeBaseName
 
 -- TODO re-export other path manipulation functions
 
 -- FIXME withTempDir and withCd should go in an Environment module
 --FIXME allow adding a template
-withTempDir :: (OsPath -> IO a) -> IO a
+withTempDir :: (Path -> IO a) -> IO a
 withTempDir = bracket mkDir rmDir
   where
-  mkDir :: IO OsPath
+  mkDir :: IO Path
   mkDir = getTemporaryDirectory >>= loop
-  loop :: OsPath -> IO OsPath
+  loop :: Path -> IO Path
   loop parentDir = do
     nonce <- randomIO :: IO Word32
     let dirName = parentDir </> "hss" <.> (unsafeEncodeUtf . show) nonce
@@ -50,5 +50,5 @@ withTempDir = bracket mkDir rmDir
   -- rmDir = const $ pure () -- DEBUG
   rmDir = removePathForcibly
 
-withCd :: OsPath -> IO a -> IO a
+withCd :: Path -> IO a -> IO a
 withCd = withCurrentDirectory

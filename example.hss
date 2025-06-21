@@ -1,11 +1,10 @@
 #!/usr/bin/env hss
 
-import Hss.LLString
-
 main :: IO ()
 main = do
   putStrLn "hello from hss"
   progName <- getProgName
-  putStrLn $ "progName: " <> pathToHsStr progName
-  putStr "args: "
-  print =<< getArgs
+  putStrLn $ "progName: " <> intoText progName
+  putStrLn "args: "
+  args <- getArgs
+  forM_ args $ \arg -> putStrLn ("  " <> intoText arg)

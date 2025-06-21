@@ -1,35 +1,93 @@
 module Hss.String.Convert
-  ( IntoOsStr(..)
-  , unsafeDecodeUtf
+  ( IntoBytes(..)
+  , IntoText(..)
+  , IntoOsStr(..)
+  -- , strHs2B
+  , strOs2Hs, strHs2Os
+  , bs2lbs
   ) where
 
-import Control.Exception (throw)
+import Hss.Preprelude
 import Hss.String.Types
-import Prelude (id, Either(..), ($), (.))
+
+import Control.Exception (throw)
 import System.IO (utf8)
-import System.OsPath (encodeWith, decodeWith)
+import System.OsPath (encodeWith, decodeWith, unsafeEncodeUtf)
 import System.OsPath.Encoding(utf16le_b)
 
+import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
-import qualified System.IO as Sys
 
-unsafeDecodeUtf :: OsPath -> Sys.FilePath
-unsafeDecodeUtf ospath = case decodeWith utf8 utf16le_b ospath of
+-----------------------------
+------ Byte Strings ------
+-----------------------------
+
+class IntoBytes str where
+  intoBytes :: str -> Bytes
+
+instance IntoBytes Bytes where
+  intoBytes = id
+
+instance IntoBytes Text where
+  intoBytes = T.encodeUtf8
+
+instance IntoBytes OsStr where
+  intoBytes = T.encodeUtf8 . T.pack . strOs2Hs
+
+-----------------------------
+------ Text Strings ------
+-----------------------------
+
+class IntoText str where
+  intoText :: str -> Text
+
+instance IntoText Bytes where
+  intoText = T.decodeUtf8
+
+instance IntoText Text where
+  intoText = id
+
+instance IntoText OsStr where
+  intoText = T.pack . strOs2Hs
+
+-----------------------------
+------ Os Strings ------
+-----------------------------
+
+class IntoOsStr str where
+  intoOsStr :: str -> OsStr
+  intoPath :: str -> Path
+  intoPath = intoOsStr
+default IntoOsStr (OsStr)
+
+instance IntoOsStr Path where
+  intoOsStr = id
+
+instance IntoOsStr Bytes where intoOsStr = strB2Os
+strB2Os :: Bytes -> OsStr
+strB2Os str = case encodeWith utf8 utf16le_b (T.unpack . T.decodeUtf8 $ str) of
   Right ok -> ok
   Left exn -> throw exn
 
-class IntoOsStr str where
-  toOsStr :: str -> OsString
-  toPath :: str -> OsPath
-  toPath = toOsStr
-default IntoOsStr (OsString)
+-----------------------------
+------ Haskell Strings ------
+-----------------------------
 
-instance IntoOsStr OsPath where
-  toOsStr = id
+strHs2B :: HsString -> Bytes
+strHs2B = intoBytes . T.pack
 
-instance IntoOsStr ByteString where
-  toOsStr str = case encodeWith utf8 utf16le_b (T.unpack . T.decodeUtf8 $ str) of
-    Right ok -> ok
-    Left exn -> throw exn
+strOs2Hs :: OsStr -> HsString
+strOs2Hs str = case decodeWith utf8 utf16le_b str of
+  Right ok -> ok
+  Left exn -> throw exn
 
+strHs2Os :: HsString -> OsStr
+strHs2Os = unsafeEncodeUtf
+
+-----------------------------
+------ Lazy and Strict ------
+-----------------------------
+
+bs2lbs :: Bytes -> LBS.ByteString
+bs2lbs = LBS.fromStrict

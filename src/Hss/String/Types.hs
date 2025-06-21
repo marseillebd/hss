@@ -1,14 +1,27 @@
 module Hss.String.Types
-  ( OsString, OsPath
-  , ByteString
+  ( -- * Blessed String Types
+    Bytes
   , Text
+  , OsStr
+  , Path
+  -- * Haskell Strings
+  , HsString
   ) where
 
-import System.OsPath (OsString, OsPath)
 import Data.ByteString (ByteString)
 import Data.Text (Text)
+import System.OsPath (OsString, OsPath, unsafeEncodeUtf)
 import Data.String (IsString(..))
-import System.OsPath (unsafeEncodeUtf)
 
-instance IsString OsPath where
+import qualified Prelude
+
+type Bytes = ByteString
+
+type OsStr = OsString
+type Path = OsPath
+
+type HsString = Prelude.String
+{-# DEPRECATED HsString "use Text or any of the other un-slow string types" #-}
+
+instance IsString OsStr where
   fromString = unsafeEncodeUtf

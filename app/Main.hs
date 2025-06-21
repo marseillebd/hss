@@ -3,7 +3,6 @@ module Main where
 
 import Hss
 
-import qualified Hss.Bytes as B
 import qualified Hss.LinkedList as LL
 
 
@@ -14,13 +13,13 @@ main = getArgs >>= \case
         scriptName = basename scriptPath -- FIXME encode names outside of usual identifiers
     exe "cp" scriptPath (tmpdir </> "Main.hs")
     let freshCabal = tmpdir </> scriptName <.> "cabal"
-    writeFile freshCabal (textToBytes templateCabal)
-    writeFile (tmpdir </> "cabal.project") (textToBytes cabalProject)
+    writeFile freshCabal (intoBytes templateCabal)
+    writeFile (tmpdir </> "cabal.project") (intoBytes cabalProject)
     exe "sed" "-i" ("s/SCRIPTNAME/"<>scriptName<>"/") freshCabal
     absExePath <- withCd tmpdir $ do
       exe "cabal" "build"
-      relExePaths <- exe "find" "-executable" "-type" "f" "-name" scriptName |> captureLines
-      let relExePath = toPath . maybe undefined id . LL.head $ relExePaths
+      relExePaths <- exe "find" "-executable" "-type" "f" "-name" scriptName |> spongeLines
+      let relExePath = intoPath . maybe undefined id . LL.head $ relExePaths
       pure $ tmpdir </> relExePath
     let scriptExePath = scriptDir </> "."<>scriptName
     exe "mv" absExePath scriptExePath
