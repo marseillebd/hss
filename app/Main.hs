@@ -1,3 +1,4 @@
+#!/usr/bin/env hss
 module Main where
 
 import Hss
@@ -11,12 +12,7 @@ main = getArgs >>= \case
   scriptPath : otherArgs -> withTempDir $ \tmpdir -> do
     let scriptDir = dirname scriptPath
         scriptName = basename scriptPath -- FIXME encode names outside of usual identifiers
-    readFile scriptPath >>= \case
-      content | "#!" `B.isPrefixOf` content -> do
-        writeFile (tmpdir </> "Main.hs") "\n"
-        exe "tail" "-n+2" scriptPath &>> (tmpdir </> "Main.hs")
-              | otherwise ->
-        exe "cp" scriptPath (tmpdir </> "Main.hs")
+    exe "cp" scriptPath (tmpdir </> "Main.hs")
     let freshCabal = tmpdir </> scriptName <.> "cabal"
     writeFile freshCabal (textToBytes templateCabal)
     writeFile (tmpdir </> "cabal.project") (textToBytes cabalProject)

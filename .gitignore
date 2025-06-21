@@ -1,3 +1,4 @@
 .*.swp
 dist-newstyle/
 .example
+app/.Main

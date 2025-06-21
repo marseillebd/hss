@@ -46,9 +46,18 @@ Use `mask --help` in the project directory to see available commands, or read on
 > DELME: a basic smoke test on my own machine
 
 ```sh
+if ! which hss; then echo >&2 'make sure `hss` is on the `PATH`'; exit 1; fi
 cabal build && ./example.hss foo goo fish
 ```
 
+### hack bootstrap
+
+> DELME: a basic smoke test on my own machine
+
+```sh
+if ! which hss; then echo >&2 'make sure `hss` is on the `PATH`'; exit 1; fi
+cabal build && hss app/Main.hs && app/.Main ./example.hss foo goo fish
+```
 ## deps
 
 > Show dependency tree with graphmod+graphviz.xdot
