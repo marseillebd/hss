@@ -34,6 +34,8 @@ main = getArgs >>= \case
 cabalProject :: Text
 cabalProject = [here|
 packages: .
+with-compiler: ghc-9.12.2
+allow-newer: shh:base, shh:template-haskell
 
 source-repository-package
   type: git
@@ -59,9 +61,11 @@ executable SCRIPTNAME
   default-extensions:
     ExtendedDefaultRules,
     LambdaCase,
+    NamedDefaults,
     OverloadedStrings,
-    TemplateHaskell,
     QuasiQuotes,
+    TemplateHaskell,
+    TypeApplications,
 
   ghc-options: -Wall -Wno-type-defaults
 |]

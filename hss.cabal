@@ -23,7 +23,7 @@ common extensions
     FlexibleInstances,
     LambdaCase,
     NoImplicitPrelude,
-    -- NamedDefaults,
+    NamedDefaults,
     OverloadedStrings,
     QuasiQuotes,
     TemplateHaskell,
@@ -62,7 +62,7 @@ library
       process ^>=1.6.26.0,
       random,
       shh ^>=0.7.1.4,
-      string-like ^>=0.1.0.1,
+      -- string-like ^>=0.1.0.1,
       text,
       text-short,
     hs-source-dirs:   src

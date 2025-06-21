@@ -11,7 +11,7 @@ with a number of extensions enabled, and `Prelude` replaced by `Hss`.
 When that's done, it moves the completed executable to `.<script>` and executes it with the remaining arguments.
 TODO: If `.<script>` already exists and is up-to-date, it will just run the precompiled binary.
 
-You will need `cabal-install` version 3.0+ and a recent `ghc` (version 9.0+ at a guess).
+You will need `cabal-install` version 3.0+ and a (quite) recent `ghc` (version 9.12+ at a guess).
 
 ## The Library
 
@@ -47,4 +47,12 @@ Use `mask --help` in the project directory to see available commands, or read on
 
 ```sh
 cabal build && ./example.hss foo goo fish
+```
+
+## deps
+
+> Show dependency tree with graphmod+graphviz.xdot
+
+```sh
+find src/ -name '*.hs' | xargs graphmod -q | xdot -
 ```

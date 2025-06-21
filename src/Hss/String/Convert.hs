@@ -23,7 +23,7 @@ class IntoOsStr str where
   toOsStr :: str -> OsString
   toPath :: str -> OsPath
   toPath = toOsStr
--- default IntoOsStr (OsString) -- TODO once I can hack on ghc 9.12
+default IntoOsStr (OsString)
 
 instance IntoOsStr OsPath where
   toOsStr = id
