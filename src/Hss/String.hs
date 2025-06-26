@@ -10,6 +10,7 @@ module Hss.String
   -- * Os Strings
   , OsStr
   , IntoOsStr(..)
+  , Path
   ) where
 
 import Hss.String.Bytes

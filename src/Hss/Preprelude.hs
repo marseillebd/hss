@@ -31,6 +31,7 @@ module Hss.Preprelude
   , const, flip, curry, uncurry
   -- ** Categories
   , Functor(..), (<$>), (<&>)
+  , Bifunctor(..)
   , Applicative(..)
   , Alternative(..)
   , Monad(..), (=<<), forM_
@@ -45,6 +46,7 @@ import Control.Applicative
 import Control.Monad.IO.Class
 import Data.Function
 import Data.Functor
+import Data.Bifunctor
 import Data.Char (chr, ord)
 import Control.Monad
 

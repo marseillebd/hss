@@ -2,6 +2,7 @@
 module Main where
 
 import Hss
+import Hss.Process
 
 import qualified Hss.LinkedList as LL
 
@@ -11,7 +12,8 @@ main = getArgs >>= \case
   scriptPath : otherArgs -> withTempDir $ \tmpdir -> do
     let scriptDir = dirname scriptPath
         scriptName = basename scriptPath -- FIXME encode names outside of usual identifiers
-    exe "cp" scriptPath (tmpdir </> "Main.hs")
+    runShell $ simple "cp" [scriptPath, tmpdir </> "Main.hs"]
+    -- exe "cp" scriptPath (tmpdir </> "Main.hs")
     let freshCabal = tmpdir </> scriptName <.> "cabal"
     writeFile freshCabal (intoBytes templateCabal)
     writeFile (tmpdir </> "cabal.project") (intoBytes cabalProject)
@@ -21,9 +23,10 @@ main = getArgs >>= \case
       relExePaths <- exe "find" "-executable" "-type" "f" "-name" scriptName |> spongeLines
       let relExePath = intoPath . maybe undefined id . LL.head $ relExePaths
       pure $ tmpdir </> relExePath
-    let scriptExePath = scriptDir </> "."<>scriptName
-    exe "mv" absExePath scriptExePath
-    exe scriptExePath otherArgs -- TODO apply other args
+    runShell $ do
+      let scriptExePath = scriptDir </> "."<>scriptName
+      simple "mv" [absExePath, scriptExePath]
+      simple scriptExePath otherArgs
   _ -> pure () -- TODO exitFailure
 
 cabalProject :: Text

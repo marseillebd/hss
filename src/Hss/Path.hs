@@ -7,8 +7,7 @@ module Hss.Path
   ) where
 
 import Hss.Preprelude
-import Hss.String.Types (OsStr, Path)
-import Hss.String.Convert ()
+import Hss.String (OsStr, Path)
 
 import Control.Exception (try, bracket)
 import Data.Word (Word32)

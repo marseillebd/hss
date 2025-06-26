@@ -11,6 +11,7 @@ import Hss.Preprelude
 import Hss.String.Types
 
 import Control.Exception (throw)
+import Data.Word (Word8)
 import System.IO (utf8)
 import System.OsPath (encodeWith, decodeWith, unsafeEncodeUtf)
 import System.OsPath.Encoding(utf16le_b)
@@ -91,3 +92,25 @@ strHs2Os = unsafeEncodeUtf
 
 bs2lbs :: Bytes -> LBS.ByteString
 bs2lbs = LBS.fromStrict
+
+-----------------------------
+-------- Characters ---------
+-----------------------------
+
+-- | Conversion between 'Word8' and 'Char'. Should compile to a no-op.
+--
+-- Taken from bytestring.
+-- TODO use unsafeChr from GHC.Base, perhaps
+w2c :: Word8 -> Char
+w2c = chr . fromIntegral
+{-# INLINE w2c #-}
+
+-- | Unsafe conversion between 'Char' and 'Word8'. This is a no-op and
+-- silently truncates to 8 bits Chars > '\255'. It is provided as
+-- convenience for ByteString construction.
+--
+-- Taken from bytestring.
+c2w :: Char -> Word8
+c2w = fromIntegral . ord
+{-# INLINE c2w #-}
+

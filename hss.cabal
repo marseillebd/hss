@@ -41,16 +41,15 @@ library
       Hss,
       Hss.LinkedList,
       Hss.Path,
-      -- Hss.Process,
+      Hss.Process,
       Hss.String,
       Hss.String.Bytes,
       Hss.String.Convert,
-      Hss.String.LLString,
+      Hss.String.HsString,
       Hss.String.Text,
       Hss.String.Types,
     other-modules:
       Hss.Preprelude,
-      Hss.String.Internal,
     build-depends:
       base >=4.17,
       bytestring ^>=0.12,

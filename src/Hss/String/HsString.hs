@@ -1,4 +1,4 @@
-module Hss.String.LLString
+module Hss.String.HsString
 {-# DEPRECATED "linked list strings are very slow; plan on this module vanishing" #-}
   ( putStr, putStrLn
   , print
