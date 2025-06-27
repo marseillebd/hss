@@ -22,7 +22,9 @@ common extensions
     DuplicateRecordFields,
     ExtendedDefaultRules,
     FlexibleInstances,
+    GADTs,
     LambdaCase,
+    MultiParamTypeClasses,
     NamedDefaults,
     NamedFieldPuns,
     NoImplicitPrelude,
@@ -31,6 +33,7 @@ common extensions
     QuasiQuotes,
     TemplateHaskell,
     TypeApplications,
+    TypeFamilies,
     TypeSynonymInstances,
   other-extensions:
     DefaultSignatures,

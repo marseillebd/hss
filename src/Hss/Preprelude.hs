@@ -37,20 +37,33 @@ module Hss.Preprelude
   , Monad(..), (=<<), forM_
   -- * IO
   , IO, MonadIO(..)
+  -- ** System
+  , ExitCode(..), exitSuccess, exitFailure, exitWith
   -- * Bottom
   , undefined
   ) where
 
-import Prelude hiding (undefined)
 import Control.Applicative
+import Control.Monad
 import Control.Monad.IO.Class
-import Data.Function
-import Data.Functor
 import Data.Bifunctor
 import Data.Char (chr, ord)
-import Control.Monad
+import Data.Function
+import Data.Functor
+import Prelude hiding (undefined)
+import System.Exit (ExitCode(..))
 
 import qualified Prelude
+import qualified System.Exit as Sys
+
+exitSuccess :: MonadIO io => io a
+exitSuccess = liftIO Sys.exitSuccess
+
+exitFailure :: MonadIO io => io a
+exitFailure = liftIO Sys.exitFailure
+
+exitWith :: MonadIO io => ExitCode -> io a
+exitWith = liftIO . Sys.exitWith
 
 undefined :: a
 undefined = Prelude.undefined
